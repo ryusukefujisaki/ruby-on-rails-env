@@ -1,0 +1,5 @@
+rails
+nginx
+postgres
+.env
+.vagrant

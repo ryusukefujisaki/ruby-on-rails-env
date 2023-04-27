@@ -1,0 +1,48 @@
+networks:
+  default:
+    name: ruby_on_rails_network
+volumes:
+  socket-volume:
+  postgres-volume:
+services:
+  rails:
+    build:
+      context: rails
+      args:
+        APP_ROOT: $APP_ROOT
+    container_name: rails
+    environment:
+      HOST_NAME: $HOST_NAME
+      RAILS_ENV: $RAILS_ENV
+      SECRET_KEY_BASE: $SECRET_KEY_BASE
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_HOST: $POSTGRES_HOST
+      POSTGRES_DB: $POSTGRES_DB
+      POSTGRES_PORT: $POSTGRES_PORT
+    volumes:
+      - ./rails:$APP_ROOT
+      - socket-volume:${APP_ROOT}/tmp/sockets
+  nginx:
+    build:
+      context: nginx
+    container_name: nginx
+    ports:
+      - 80:80
+    environment:
+      HOST_NAME: $HOST_NAME
+      APP_ROOT: $APP_ROOT
+    volumes:
+      - socket-volume:${APP_ROOT}/tmp/sockets
+    depends_on:
+      - rails
+  postgres:
+    build:
+      context: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_DB: $POSTGRES_DB
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
